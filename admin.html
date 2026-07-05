@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内容管理 · 玉柴马石油</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  body { background: #eef1f4; }
+  .admin-topbar {
+    position: sticky; top: 0; z-index: 50; height: 56px; background: var(--black);
+    display: flex; align-items: center; gap: 14px; padding: 0 20px; color: #fff;
+  }
+  .admin-topbar .brand-chip img { height: 28px; }
+  .admin-topbar h1 { font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+  .admin-topbar .tag { font-size: 11px; color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 2px 9px; }
+  .admin-topbar .spacer { margin-left: auto; }
+  .admin-topbar button { background: rgba(255,255,255,.1); color: #fff; border: none; border-radius: 7px; padding: 7px 14px; font-size: 13px; }
+  .admin-topbar button:hover { background: rgba(255,255,255,.18); }
+  .admin-wrap { display: grid; grid-template-columns: 250px minmax(0,1fr); gap: 0; min-height: calc(100vh - 56px); }
+  .admin-side { background: #fff; border-right: 1px solid var(--line); padding: 18px 14px; }
+  .admin-side .grp { font-size: 11px; letter-spacing: .2em; color: var(--gray); margin: 16px 8px 8px; }
+  .admin-side .grp:first-child { margin-top: 0; }
+  .admin-side button.cat {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    padding: 10px 12px; border-radius: 8px; font-size: 14.5px; color: var(--ink); margin-bottom: 2px;
+  }
+  .admin-side button.cat:hover { background: var(--bg); }
+  .admin-side button.cat.active { background: var(--teal-soft); color: var(--teal-deep); font-weight: 600; }
+  .admin-main { padding: 24px 28px 60px; max-width: 1180px; }
+  .notice { background: #FFF7E6; border: 1px solid #FFE0A3; color: #8a5a00; border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 20px; line-height: 1.7; }
+  .notice b { color: #6b4600; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
+  .panel h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .panel .hint { font-size: 12.5px; color: var(--gray); margin-bottom: 16px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--slate); margin-bottom: 5px; }
+  .field input, .field select, .field textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px;
+    font-size: 14px; font-family: var(--sans); color: var(--ink); background: #fff;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+  .field .sub { font-size: 11.5px; color: var(--gray); margin-top: 4px; }
+  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .editor-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .editor-head .grow { margin-left: auto; }
+  .btn-sm { background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 13px; font-size: 13px; color: var(--ink); }
+  .btn-sm:hover { background: #e9edf1; }
+  .btn-sm.on { background: var(--teal-soft); border-color: var(--teal); color: var(--teal-deep); }
+  textarea#editor { min-height: 420px; font-family: var(--mono); font-size: 13px; line-height: 1.7; resize: vertical; white-space: pre; overflow-wrap: normal; }
+  .split-edit { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .split-edit.single { grid-template-columns: 1fr; }
+  .preview-box { border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; background: #fff; overflow: auto; max-height: 640px; }
+  .preview-box .prose { font-size: 14px; }
+  .pub-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .pub-tabs button { flex: 1; padding: 10px; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; font-size: 13.5px; font-weight: 600; color: var(--slate); }
+  .pub-tabs button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pub-body { display: none; }
+  .pub-body.active { display: block; }
+  .btn-primary { background: var(--red); color: #fff; border: none; border-radius: 8px; padding: 11px 22px; font-size: 14.5px; font-weight: 600; }
+  .btn-primary:hover { background: var(--red-deep); }
+  .btn-primary:disabled { opacity: .5; }
+  .btn-teal2 { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 11px 22px; font-size: 14.5px; font-weight: 600; }
+  .btn-teal2:hover { background: var(--teal-deep); }
+  .log { font-family: var(--mono); font-size: 12.5px; background: #0f1720; color: #cfe; border-radius: 8px; padding: 12px 14px; margin-top: 14px; white-space: pre-wrap; line-height: 1.7; display: none; }
+  .log.show { display: block; }
+  .log .ok { color: #7fe0a0; } .log .err { color: #ff8a9c; } .log .muted { color: #7d90a3; }
+  .steps { font-size: 13px; color: var(--slate); line-height: 1.9; }
+  .steps code { background: var(--bg); border-radius: 4px; padding: 1px 6px; font-family: var(--mono); font-size: 12px; }
+  /* 登录门 */
+  .gate { position: fixed; inset: 0; background: var(--black); display: grid; place-items: center; z-index: 200; }
+  .gate-card { background: #fff; border-radius: 16px; padding: 36px 34px; width: 340px; box-shadow: 0 30px 80px rgba(0,0,0,.4); }
+  .gate-card .brand-chip { display: inline-flex; margin-bottom: 18px; }
+  .gate-card h2 { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+  .gate-card p { font-size: 13px; color: var(--gray); margin-bottom: 20px; }
+  .gate-card .err { color: var(--red); font-size: 12.5px; margin-top: 8px; min-height: 16px; }
+  @media (max-width: 860px) {
+    .admin-wrap { grid-template-columns: 1fr; }
+    .admin-side { border-right: none; border-bottom: 1px solid var(--line); }
+    .split-edit { grid-template-columns: 1fr; }
+    .row3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 登录门 -->
+<div class="gate" id="gate">
+  <form class="gate-card" id="gateForm">
+    <span class="brand-chip"><img src="assets/img/logo.png" alt="玉柴马石油" style="height:32px"></span>
+    <h2>内容管理登录</h2>
+    <p>玉柴马石油 · 站点内容管理面板</p>
+    <div class="field"><label>账号</label><input id="gUser" autocomplete="username" placeholder="admin"></div>
+    <div class="field"><label>密码</label><input id="gPass" type="password" autocomplete="current-password" placeholder="admin"></div>
+    <button class="btn-primary" style="width:100%;margin-top:6px" type="submit">进入</button>
+    <div class="err" id="gErr"></div>
+  </form>
+</div>
+
+<div id="app" style="display:none">
+  <div class="admin-topbar">
+    <span class="brand-chip"><img src="assets/img/logo.png" alt=""></span>
+    <h1>内容管理面板</h1>
+    <span class="tag">玉柴马石油</span>
+    <div class="spacer"></div>
+    <button id="viewSite" type="button">查看网站 ↗</button>
+    <button id="logout" type="button">退出</button>
+  </div>
+
+  <div class="admin-wrap">
+    <nav class="admin-side" id="side"></nav>
+
+    <main class="admin-main">
+      <div class="notice">
+        <b>说明：</b>本页面账号密码仅为简单门槛，请勿把本页网址分享给他人。真正的"一键发布"需要一个 GitHub 令牌（下方"令牌发布"）；若不使用令牌，可用"下载文件"再手动提交。
+        每次发布后，网站约 1 分钟自动更新。
+      </div>
+
+      <!-- 案例元数据表单 -->
+      <div class="panel" id="casePanel" style="display:none">
+        <h2>案例信息</h2>
+        <p class="hint">下列字段会生成案例卡片与页头；正文在下方编辑区按模板填写。</p>
+        <div class="field">
+          <label>选择案例</label>
+          <select id="caseSelect"><option value="__new__">➕ 新建案例</option></select>
+        </div>
+        <div class="row2">
+          <div class="field"><label>标题</label><input id="cTitle" placeholder="连铸机工作辊轴承润滑改造"></div>
+          <div class="field"><label>网址标识 slug（英文/拼音）</label><input id="cSlug" placeholder="steel-caster-2026"><div class="sub">用于网址与文件名，只能用字母、数字、连字符</div></div>
+        </div>
+        <div class="row3">
+          <div class="field"><label>客户名称</label><input id="cClient" placeholder="华东某大型钢铁集团"></div>
+          <div class="field"><label>行业类别</label><input id="cIndustry" placeholder="钢铁冶金 · 炼钢连铸"></div>
+          <div class="field"><label>日期</label><input id="cDate" placeholder="2026-05"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>卡片标签</label><input id="cTag" placeholder="钢铁冶金 · 示例"></div>
+          <div class="field"><label>一句话痛点（卡片摘要）</label><input id="cSummary" placeholder="高温水淋工况下润滑脂流失快"></div>
+        </div>
+        <div class="field">
+          <label>三个关键指标（格式：数值 | 说明）</label>
+          <div class="row3">
+            <input id="cM1" placeholder="−41% | 润滑脂消耗">
+            <input id="cM2" placeholder="2.3× | 轴承寿命">
+            <input id="cM3" placeholder="−67% | 非计划停机">
+          </div>
+        </div>
+      </div>
+
+      <!-- 编辑区 -->
+      <div class="panel">
+        <div class="editor-head">
+          <h2 style="margin:0" id="editorTitle">正文（Markdown）</h2>
+          <span class="hint" id="editorPath" style="margin:0"></span>
+          <div class="grow"></div>
+          <label class="btn-sm" style="cursor:pointer">上传 .md 文件<input type="file" id="fileUp" accept=".md,.markdown,text/markdown" hidden></label>
+          <button class="btn-sm" id="loadCur" type="button">载入当前线上内容</button>
+          <button class="btn-sm on" id="togglePv" type="button">预览：开</button>
+        </div>
+        <div class="split-edit" id="splitEdit">
+          <textarea id="editor" spellcheck="false" placeholder="在此编辑 Markdown 内容…"></textarea>
+          <div class="preview-box"><div class="prose" id="preview"></div></div>
+        </div>
+      </div>
+
+      <!-- 发布 -->
+      <div class="panel">
+        <h2>发布</h2>
+        <p class="hint">仓库：<span class="mono">JamesQiu2005/yuchai-petronas-lube</span></p>
+        <div class="pub-tabs">
+          <button id="tabToken" class="active" type="button">令牌一键发布</button>
+          <button id="tabDownload" type="button">下载文件手动提交</button>
+        </div>
+
+        <div class="pub-body active" id="bodyToken">
+          <div class="field">
+            <label>GitHub 令牌（Personal Access Token）</label>
+            <input id="pat" type="password" placeholder="ghp_… 或 github_pat_…">
+            <div class="sub">仅存在本浏览器（localStorage），不会上传到网站。建议用<b>细粒度令牌</b>，仅授予本仓库的 Contents 读写权限。
+              <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">创建令牌 ↗</a></div>
+          </div>
+          <button class="btn-primary" id="publishBtn" type="button">发布到网站</button>
+          <div class="log" id="log"></div>
+        </div>
+
+        <div class="pub-body" id="bodyDownload">
+          <p class="steps" id="dlSteps"></p>
+          <button class="btn-teal2" id="downloadBtn" type="button">下载 .md 文件</button>
+          <div class="steps" style="margin-top:16px">
+            提交方法（任选其一）：<br>
+            1. 打开仓库对应目录 → <code>Add file</code> → <code>Upload files</code> → 拖入刚下载的文件 → <code>Commit changes</code>；<br>
+            2. 或把文件发给会 git 的同事 / 用 Kimi 生成 commit 命令提交。<br>
+            <b id="dlPathHint"></b>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="assets/js/vendor/marked.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var OWNER = "JamesQiu2005", REPO = "yuchai-petronas-lube";
+  marked.setOptions({ gfm: true, breaks: false });
+
+  /* ---------- 登录门 ---------- */
+  var gate = document.getElementById("gate"), app = document.getElementById("app");
+  if (sessionStorage.getItem("ycms_auth") === "1") showApp();
+  document.getElementById("gateForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = document.getElementById("gUser").value.trim(), p = document.getElementById("gPass").value;
+    if (u === "admin" && p === "admin") { sessionStorage.setItem("ycms_auth", "1"); showApp(); }
+    else document.getElementById("gErr").textContent = "账号或密码不正确。";
+  });
+  function showApp() { gate.style.display = "none"; app.style.display = "block"; init(); }
+  document.getElementById("logout").addEventListener("click", function () { sessionStorage.removeItem("ycms_auth"); location.reload(); });
+  document.getElementById("viewSite").addEventListener("click", function () { window.open("index.html", "_blank"); });
+
+  /* ---------- 分类 ---------- */
+  var CATS = [
+    { id: "case", label: "客户案例", type: "case", group: "内容" },
+    { id: "home", label: "首页内容", type: "page", path: "content/pages/home.md", group: "内容" },
+    { id: "about", label: "关于我们", type: "page", path: "content/pages/about.md", group: "内容" },
+    { id: "steel", label: "钢铁冶金", type: "page", path: "content/pages/steel.md", group: "行业方案" },
+    { id: "precision", label: "精密传动与机器人", type: "page", path: "content/pages/precision.md", group: "行业方案" },
+    { id: "power-tools", label: "电动工具", type: "page", path: "content/pages/power-tools.md", group: "行业方案" },
+    { id: "automotive", label: "汽车工业", type: "page", path: "content/pages/automotive.md", group: "行业方案" },
+    { id: "tbm", label: "盾构装备", type: "page", path: "content/pages/tbm.md", group: "行业方案" }
+  ];
+  var current = CATS[0];
+
+  var CASE_TEMPLATE = [
+    "## 项目背景", "",
+    "- **主要痛点**：",
+    "- **期望目标**：",
+    "- **应用场景**：", "",
+    "## 解决方案", "",
+    "- **推荐产品**：`产品型号`",
+    "- **核心优势**：",
+    "- **实施过程**：", "",
+    "## 实施效果 · 关键数据对比", "",
+    "| 指标 | 实施前 | 实施后 | 改善效果 |",
+    "| --- | --- | --- | --- |",
+    "| 成本 |  |  |  |",
+    "| 效率 |  |  |  |",
+    "| 质量 |  |  |  |", "",
+    "## 客户反馈", "",
+    "> \"在此填写客户评价。\"——职务（示例）", "",
+    "## 总结与展望", "",
+    "在此填写项目总结与后续计划。", ""
+  ].join("\n");
+
+  function init() {
+    buildSide();
+    bindEditor();
+    bindPublish();
+    selectCat(CATS[0]);
+    document.getElementById("pat").value = localStorage.getItem("ycms_pat") || "";
+  }
+
+  function buildSide() {
+    var side = document.getElementById("side"), html = "", lastG = null;
+    CATS.forEach(function (c) {
+      if (c.group !== lastG) { html += '<div class="grp">' + c.group + "</div>"; lastG = c.group; }
+      html += '<button class="cat" data-id="' + c.id + '">' + c.label + "</button>";
+    });
+    side.innerHTML = html;
+    side.querySelectorAll("button.cat").forEach(function (b) {
+      b.addEventListener("click", function () {
+        selectCat(CATS.filter(function (c) { return c.id === b.dataset.id; })[0]);
+      });
+    });
+  }
+
+  var editor = document.getElementById("editor"), preview = document.getElementById("preview");
+  var caseSelect = document.getElementById("caseSelect");
+
+  function selectCat(cat) {
+    current = cat;
+    document.querySelectorAll("button.cat").forEach(function (b) { b.classList.toggle("active", b.dataset.id === cat.id); });
+    document.getElementById("casePanel").style.display = cat.type === "case" ? "block" : "none";
+    if (cat.type === "case") {
+      document.getElementById("editorTitle").textContent = "案例正文（Markdown）";
+      document.getElementById("editorPath").textContent = "";
+      loadCaseList();
+      caseSelect.value = "__new__";
+      onCaseSelectChange();
+    } else {
+      document.getElementById("editorTitle").textContent = "页面正文（Markdown，含开头的 --- 配置块）";
+      document.getElementById("editorPath").textContent = cat.path;
+      loadCurrent();
+    }
+    renderPreview();
+  }
+
+  /* ---------- 案例列表/选择 ---------- */
+  function loadCaseList() {
+    fetch("content/cases/manifest.json?_=" + Math.round(performance.now())).then(function (r) { return r.json(); }).then(function (list) {
+      var opts = '<option value="__new__">➕ 新建案例</option>';
+      (list || []).forEach(function (it) { opts += '<option value="' + it.slug + '">' + esc(it.title || it.slug) + "</option>"; });
+      caseSelect.innerHTML = opts;
+    }).catch(function () {});
+  }
+  caseSelect.addEventListener("change", onCaseSelectChange);
+  function onCaseSelectChange() {
+    var slug = caseSelect.value;
+    if (slug === "__new__") {
+      setCaseForm({});
+      editor.value = CASE_TEMPLATE;
+      renderPreview();
+      return;
+    }
+    // 载入已有案例
+    fetch("content/cases/manifest.json").then(function (r) { return r.json(); }).then(function (list) {
+      var it = (list || []).filter(function (x) { return x.slug === slug; })[0] || {};
+      setCaseForm(it);
+    });
+    fetch("content/cases/" + slug + ".md?_=" + Math.round(performance.now())).then(function (r) { return r.text(); }).then(function (t) {
+      editor.value = stripFrontmatter(t).body;
+      renderPreview();
+    });
+  }
+  function setCaseForm(it) {
+    val("cTitle", it.title); val("cSlug", it.slug); val("cClient", it.client);
+    val("cIndustry", it.industry); val("cDate", it.date); val("cTag", it.tag); val("cSummary", it.summary);
+    var m = it.metrics || [];
+    val("cM1", m[0] ? m[0].replace("|", " | ") : "");
+    val("cM2", m[1] ? m[1].replace("|", " | ") : "");
+    val("cM3", m[2] ? m[2].replace("|", " | ") : "");
+  }
+  function val(id, v) { document.getElementById(id).value = v || ""; }
+
+  /* ---------- 载入当前线上内容 ---------- */
+  function loadCurrent() {
+    if (current.type !== "page") return;
+    fetch(current.path + "?_=" + Math.round(performance.now())).then(function (r) { return r.text(); }).then(function (t) {
+      editor.value = t; renderPreview();
+    }).catch(function () { editor.value = ""; });
+  }
+  document.getElementById("loadCur").addEventListener("click", function () {
+    if (current.type === "case") onCaseSelectChange(); else loadCurrent();
+  });
+
+  /* ---------- 文件上传 ---------- */
+  document.getElementById("fileUp").addEventListener("change", function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var text = rd.result;
+      if (current.type === "case") {
+        var pf = stripFrontmatter(text);
+        // 若上传文件带 frontmatter，填入表单
+        if (pf.meta.title) fillCaseFromMeta(pf.meta);
+        editor.value = pf.body || text;
+      } else {
+        editor.value = text;
+      }
+      renderPreview();
+    };
+    rd.readAsText(f, "utf-8");
+    e.target.value = "";
+  });
+  function fillCaseFromMeta(meta) {
+    if (meta.title) val("cTitle", meta.title);
+    if (meta.slug) val("cSlug", meta.slug);
+    if (meta.client) val("cClient", meta.client);
+    if (meta.industry) val("cIndustry", meta.industry);
+    if (meta.date) val("cDate", meta.date);
+    if (meta.tag) val("cTag", meta.tag);
+    if (meta.summary) val("cSummary", meta.summary);
+    if (meta.metrics) { val("cM1", (meta.metrics[0] || "").replace("|", " | ")); val("cM2", (meta.metrics[1] || "").replace("|", " | ")); val("cM3", (meta.metrics[2] || "").replace("|", " | ")); }
+  }
+
+  /* ---------- 预览 ---------- */
+  var pvOn = true;
+  document.getElementById("togglePv").addEventListener("click", function () {
+    pvOn = !pvOn; this.textContent = "预览：" + (pvOn ? "开" : "关"); this.classList.toggle("on", pvOn);
+    document.getElementById("splitEdit").classList.toggle("single", !pvOn);
+  });
+  editor.addEventListener("input", renderPreview);
+  document.querySelectorAll("#caseForm, #cTitle").forEach(function () {});
+  ["cTitle", "cClient", "cIndustry", "cDate"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", renderPreview);
+  });
+  function renderPreview() {
+    if (!pvOn) return;
+    var body = current.type === "case" ? editor.value : stripFrontmatter(editor.value).body;
+    var head = "";
+    if (current.type === "case") {
+      var t = document.getElementById("cTitle").value, c = document.getElementById("cClient").value;
+      if (t) head = "<h1 style='font-size:22px;margin-bottom:6px'>" + esc(t) + "</h1>";
+      if (c) head += "<p style='color:var(--gray);font-size:13px;margin-bottom:16px'>" + esc(c) + "</p>";
+    }
+    preview.innerHTML = head + marked.parse(body || "");
+    stylize(preview);
+  }
+  // 轻量重上样式（与站点渲染一致的核心部分）
+  function stylize(root) {
+    root.querySelectorAll("code").forEach(function (c) {
+      var s = document.createElement("span"); s.className = "prod"; s.textContent = c.textContent;
+      c.parentNode.replaceChild(s, c);
+    });
+    root.querySelectorAll("table").forEach(function (t) {
+      t.classList.add("spec");
+      if (!t.parentNode.classList.contains("table-wrap")) {
+        var w = document.createElement("div"); w.className = "table-wrap";
+        t.parentNode.insertBefore(w, t); w.appendChild(t);
+      }
+      t.querySelectorAll("tbody tr").forEach(function (tr) { if (tr.children[0]) tr.children[0].classList.add("dev"); });
+    });
+  }
+
+  /* ---------- frontmatter 工具 ---------- */
+  function stripFrontmatter(text) {
+    text = String(text).replace(/^﻿/, "").replace(/\r\n/g, "\n");
+    var m = /^---\n([\s\S]*?)\n---\n?/.exec(text);
+    if (!m) return { meta: {}, body: text };
+    var meta = {}, key = null;
+    m[1].split("\n").forEach(function (line) {
+      if (/^\s*$/.test(line)) return;
+      var arr = /^\s*-\s+(.*)$/.exec(line);
+      if (arr && key) { (meta[key] = meta[key] || []).push(uq(arr[1])); return; }
+      var kv = /^([A-Za-z0-9_]+):\s?(.*)$/.exec(line);
+      if (kv) { key = kv[1]; meta[key] = kv[2] === "" ? [] : uq(kv[2]); }
+    });
+    return { meta: meta, body: text.slice(m[0].length) };
+  }
+  function uq(s) { s = String(s).trim(); if ((s[0] === '"' && s.slice(-1) === '"') || (s[0] === "'" && s.slice(-1) === "'")) s = s.slice(1, -1); return s; }
+
+  /* ---------- 组装案例 md ---------- */
+  function buildCaseMd() {
+    var g = function (id) { return document.getElementById(id).value.trim(); };
+    var metrics = [g("cM1"), g("cM2"), g("cM3")].filter(Boolean).map(function (m) {
+      return m.split("|").map(function (x) { return x.trim(); }).join("|");
+    });
+    var fm = ["---", "title: " + g("cTitle"), "client: " + g("cClient"),
+      "industry: " + g("cIndustry"), "date: " + g("cDate"), "tag: " + g("cTag"),
+      "summary: " + g("cSummary"), "metrics:"];
+    metrics.forEach(function (m) { fm.push("  - " + m); });
+    fm.push("---", "");
+    return fm.join("\n") + "\n" + editor.value.replace(/^\s+/, "") + "\n";
+  }
+  function manifestEntry() {
+    var g = function (id) { return document.getElementById(id).value.trim(); };
+    return {
+      slug: g("cSlug"), title: g("cTitle"), client: g("cClient"), industry: g("cIndustry"),
+      date: g("cDate"), tag: g("cTag"), summary: g("cSummary"),
+      metrics: [g("cM1"), g("cM2"), g("cM3")].filter(Boolean).map(function (m) { return m.split("|").map(function (x) { return x.trim(); }).join("|"); })
+    };
+  }
+  function validSlug(s) { return /^[a-z0-9][a-z0-9-]*$/.test(s); }
+
+  /* ---------- 目标路径 & 内容 ---------- */
+  function targetPathAndContent() {
+    if (current.type === "case") {
+      var slug = document.getElementById("cSlug").value.trim();
+      return { path: "content/cases/" + slug + ".md", content: buildCaseMd(), slug: slug };
+    }
+    return { path: current.path, content: editor.value };
+  }
+
+  /* ---------- 发布：标签切换 ---------- */
+  function bindPublish() {
+    var tt = document.getElementById("tabToken"), td = document.getElementById("tabDownload");
+    var bt = document.getElementById("bodyToken"), bd = document.getElementById("bodyDownload");
+    tt.addEventListener("click", function () { tt.classList.add("active"); td.classList.remove("active"); bt.classList.add("active"); bd.classList.remove("active"); });
+    td.addEventListener("click", function () { td.classList.add("active"); tt.classList.remove("active"); bd.classList.add("active"); bt.classList.remove("active"); updateDownloadHint(); });
+    document.getElementById("pat").addEventListener("change", function () { localStorage.setItem("ycms_pat", this.value.trim()); });
+    document.getElementById("publishBtn").addEventListener("click", publishViaToken);
+    document.getElementById("downloadBtn").addEventListener("click", downloadFile);
+  }
+  function updateDownloadHint() {
+    var tp = current.type === "case" ? ("content/cases/" + (document.getElementById("cSlug").value.trim() || "your-slug") + ".md") : current.path;
+    document.getElementById("dlSteps").innerHTML = "将生成文件：<code style='background:var(--bg);padding:1px 6px;border-radius:4px'>" + esc(tp.split("/").pop()) + "</code>";
+    document.getElementById("dlPathHint").textContent = "目标位置：" + tp + (current.type === "case" ? "（新增案例还需在 content/cases/manifest.json 中登记一条，令牌发布会自动完成）" : "");
+  }
+
+  function bindEditor() {
+    document.getElementById("cSlug") && document.getElementById("cSlug").addEventListener("input", updateDownloadHint);
+  }
+
+  /* ---------- 下载 ---------- */
+  function downloadFile() {
+    if (current.type === "case") {
+      var slug = document.getElementById("cSlug").value.trim();
+      if (!validSlug(slug)) { alert("请填写合法的网址标识 slug（字母、数字、连字符）。"); return; }
+    }
+    var t = targetPathAndContent();
+    var blob = new Blob([t.content], { type: "text/markdown;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = t.path.split("/").pop();
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  /* ---------- 令牌发布 ---------- */
+  var logEl = document.getElementById("log");
+  function log(msg, cls) { logEl.classList.add("show"); logEl.innerHTML += '<span class="' + (cls || "") + '">' + msg + "</span>\n"; }
+  function clearLog() { logEl.innerHTML = ""; logEl.classList.remove("show"); }
+
+  function b64(str) { var bytes = new TextEncoder().encode(str), bin = ""; for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]); return btoa(bin); }
+  function unb64(s) { var bin = atob(String(s).replace(/\n/g, "")), b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i); return new TextDecoder().decode(b); }
+
+  function ghHeaders(token) { return { Authorization: "Bearer " + token, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }; }
+  function ghGet(path, token) {
+    return fetch("https://api.github.com/repos/" + OWNER + "/" + REPO + "/contents/" + path, { headers: ghHeaders(token) })
+      .then(function (r) { if (r.status === 404) return null; if (!r.ok) throw new Error("读取 " + path + " 失败：" + r.status); return r.json(); });
+  }
+  function ghPut(path, content, message, token, sha) {
+    var body = { message: message, content: b64(content) };
+    if (sha) body.sha = sha;
+    return fetch("https://api.github.com/repos/" + OWNER + "/" + REPO + "/contents/" + path, {
+      method: "PUT", headers: Object.assign(ghHeaders(token), { "Content-Type": "application/json" }), body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().then(function (j) { if (!r.ok) throw new Error("写入 " + path + " 失败：" + r.status + " " + (j.message || "")); return j; });
+    });
+  }
+
+  function publishViaToken() {
+    clearLog();
+    var token = document.getElementById("pat").value.trim();
+    if (!token) { log("请先填写 GitHub 令牌。", "err"); return; }
+    localStorage.setItem("ycms_pat", token);
+    var btn = document.getElementById("publishBtn"); btn.disabled = true;
+
+    var isCase = current.type === "case";
+    var slug = isCase ? document.getElementById("cSlug").value.trim() : null;
+    if (isCase && !validSlug(slug)) { log("网址标识 slug 不合法（只能字母、数字、连字符）。", "err"); btn.disabled = false; return; }
+    if (isCase && !document.getElementById("cTitle").value.trim()) { log("请填写案例标题。", "err"); btn.disabled = false; return; }
+
+    var t = targetPathAndContent();
+    log("正在发布 " + t.path + " …", "muted");
+
+    ghGet(t.path, token).then(function (ex) {
+      return ghPut(t.path, t.content, "更新 " + t.path + "（内容管理面板）", token, ex && ex.sha);
+    }).then(function () {
+      log("✓ 内容已提交", "ok");
+      if (isCase) {
+        log("正在更新案例索引 …", "muted");
+        return ghGet("content/cases/manifest.json", token).then(function (ex) {
+          var list = ex ? JSON.parse(unb64(ex.content)) : [];
+          var entry = manifestEntry();
+          var i = list.findIndex(function (x) { return x.slug === entry.slug; });
+          if (i >= 0) list[i] = entry; else list.push(entry);
+          return ghPut("content/cases/manifest.json", JSON.stringify(list, null, 2) + "\n", "更新案例索引：" + entry.slug, token, ex && ex.sha);
+        }).then(function () { log("✓ 案例索引已更新", "ok"); });
+      }
+    }).then(function () {
+      log("\n发布成功！网站约 1 分钟后自动更新。", "ok");
+      log("页面： " + (isCase ? "case.html?slug=" + slug : pagePreviewUrl()), "muted");
+      if (isCase) loadCaseList();
+    }).catch(function (e) {
+      log("✗ " + e.message, "err");
+      log("提示：确认令牌有本仓库 Contents 读写权限；或改用「下载文件」方式。", "muted");
+    }).then(function () { btn.disabled = false; });
+  }
+  function pagePreviewUrl() {
+    var map = { home: "index.html", about: "about.html", steel: "solutions/steel.html", precision: "solutions/precision.html", "power-tools": "solutions/power-tools.html", automotive: "solutions/automotive.html", tbm: "solutions/tbm.html" };
+    return map[current.id] || "index.html";
+  }
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+})();
+</script>
+</body>
+</html>

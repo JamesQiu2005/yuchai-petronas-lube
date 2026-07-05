@@ -326,6 +326,7 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- 手册版式（侧栏 + 内容） ---------- */
 .handbook { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 48px; align-items: start; }
+.handbook > * { min-width: 0; }
 .side-rail { position: sticky; top: calc(var(--nav-h) + 28px); }
 .side-rail .rail-title {
   font-size: 12.5px; letter-spacing: .3em; color: var(--gray); margin-bottom: 14px; font-weight: 600;
@@ -477,6 +478,63 @@ table.spec tbody tr.group-row:hover { background: var(--red-soft); }
   font-size: 12.5px; color: rgba(255, 255, 255, .4);
 }
 
+/* ---------- Markdown 渲染正文 ---------- */
+table.spec td.numcell { font-family: var(--mono); font-size: 13px; color: var(--slate); white-space: nowrap; }
+table.spec td .prod { white-space: normal; }
+
+/* 通用产品药丸（表格外也可用，如案例正文） */
+.prod {
+  font-family: var(--mono); font-size: 12.5px; color: var(--teal-deep);
+  background: var(--teal-soft); border-radius: 5px; padding: 2px 8px;
+  display: inline-block; margin: 1px 3px 1px 0;
+}
+
+.prose { font-size: 15.5px; color: var(--slate); line-height: 1.85; }
+.prose > h2 {
+  font-size: 24px; font-weight: 800; color: var(--ink); margin: 40px 0 8px;
+  scroll-margin-top: calc(var(--nav-h) + 24px);
+}
+.prose > h2:first-child { margin-top: 0; }
+.prose > h3, .doc-section h3 { font-size: 18.5px; font-weight: 700; color: var(--ink); margin: 26px 0 8px; }
+.prose > h4, .doc-section h4 { font-size: 15.5px; font-weight: 700; color: var(--ink); margin: 20px 0 6px; }
+.prose p, .doc-section p:not(.desc) { margin: 0 0 14px; }
+.prose ul, .prose ol, .doc-section ul, .doc-section ol { margin: 0 0 16px; padding-left: 4px; }
+.prose li, .doc-section li { position: relative; padding-left: 22px; margin-bottom: 8px; list-style: none; }
+.prose ul > li::before, .doc-section ul > li::before { content: ""; position: absolute; left: 4px; top: 11px; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+.prose ol, .doc-section ol { counter-reset: li; }
+.prose ol > li, .doc-section ol > li { counter-increment: li; }
+.prose ol > li::before, .doc-section ol > li::before { content: counter(li); position: absolute; left: 0; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--red-soft); color: var(--red-deep); font-size: 11px; font-weight: 700; display: grid; place-items: center; font-family: var(--mono); }
+.prose strong, .doc-section strong { color: var(--ink); font-weight: 700; }
+.prose a, .doc-section a { color: var(--teal-deep); text-decoration: underline; text-underline-offset: 2px; }
+.prose a:hover, .doc-section a:hover { color: var(--teal); }
+.prose img, .doc-section img { border-radius: 12px; box-shadow: var(--shadow-md); margin: 8px 0 18px; max-width: 100%; }
+.prose hr, .doc-section hr { border: none; border-top: 1px solid var(--line); margin: 30px 0; }
+.prose blockquote, .doc-section blockquote {
+  border-left: 3px solid var(--teal); background: var(--teal-soft); border-radius: 0 10px 10px 0;
+  padding: 14px 20px; margin: 0 0 18px; color: var(--teal-deep); font-style: italic;
+}
+.prose blockquote p, .doc-section blockquote p { margin: 0; }
+.prose .table-wrap { margin: 6px 0 22px; }
+.prose em, .doc-section em { color: var(--gray); font-size: 13.5px; font-style: normal; }
+
+/* 案例详情正文 */
+.case-detail-body.prose { padding: 30px 32px; }
+.case-detail-body.prose > h2 {
+  font-size: 16px; font-weight: 700; margin: 26px 0 10px; display: flex; align-items: center; gap: 9px;
+}
+.case-detail-body.prose > h2:first-child { margin-top: 0; }
+.case-detail-body.prose > h2::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: linear-gradient(180deg, var(--red), var(--teal)); flex: none; }
+
+/* 首页 markdown 中段 */
+#home-content { }
+#home-content > h2 { font-size: clamp(24px, 3vw, 32px); font-weight: 800; letter-spacing: .02em; margin: 8px 0 18px; }
+#home-content .adv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0 8px; }
+
+@media (max-width: 760px) {
+  .case-detail-body.prose { padding: 24px 20px; }
+  #home-content .adv-grid { grid-template-columns: 1fr; }
+}
+
 /* ---------- 动效 ---------- */
 .reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
 .reveal.in { opacity: 1; transform: none; }
@@ -502,7 +560,7 @@ table.spec tbody tr.group-row:hover { background: var(--red-soft); }
 @media (max-width: 1020px) {
   .grid.c4 { grid-template-columns: repeat(2, 1fr); }
   .grid.c3 { grid-template-columns: repeat(2, 1fr); }
-  .handbook { grid-template-columns: 1fr; }
+  .handbook { grid-template-columns: minmax(0, 1fr); }
   .side-rail { position: static; margin-bottom: 8px; }
   .side-rail ol { display: flex; flex-wrap: wrap; gap: 2px 18px; border-left: none; }
   .side-rail a { border-left: none; padding: 6px 0; }
